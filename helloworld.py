@@ -31,7 +31,7 @@ class MainHandler(tornado.web.RequestHandler):
             sleep(1)
             self.write("<script>alert(1)</script>")
             self.flush()
-
+         self.finish()
 
 def main():
     tornado.options.parse_command_line()
