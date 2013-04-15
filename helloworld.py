@@ -18,8 +18,10 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.options
 import tornado.web
+import os
 from time import sleep
 from tornado.options import define, options
+from simplejson import dumps
 
 define("port", default=8888, help="run on the given port", type=int)
 
@@ -27,18 +29,32 @@ define("port", default=8888, help="run on the given port", type=int)
 class MainHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def get(self):
-        for i in range(50):
+
+        self.write(u"""<script src="http://postmessage.freebaseapps.com/postmessage.js"></script>""")
+        self.flush()
+
+        for i in range(10):
             sleep(1)
-            self.write("<script>alert(1)</script>")
+            item = 'pos %s' % i
+            code = u"""<script>pm({
+              target: window.parent,
+              type:"Update",
+              data: %s
+            });</script>""" % dumps(item)
+            self.write(code)
             self.flush()
-         self.finish()
+
+        print 'finish'
+        self.finish()
+
 
 def main():
     tornado.options.parse_command_line()
     application = tornado.web.Application([
-        (r"/", MainHandler),
-       (r"/keepalive.js", MainHandler),
-    ])
+        (r"/keepalive.js", MainHandler),
+    ],
+        static_path=os.path.join(os.path.dirname(__file__), "static"),
+    )
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(options.port)
     tornado.ioloop.IOLoop.instance().start()
